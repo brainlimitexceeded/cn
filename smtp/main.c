@@ -1,5 +1,9 @@
+#include <stdio.h>
+#include <string.h>
+
 int connect_smtp(const char* host, int port);
-char* send_smtp(int sock, const char* msg);
+void send_smtp(int sock, const char* msg, char* resp, size_t len);
+
 
 
 /*
@@ -9,5 +13,17 @@ char* send_smtp(int sock, const char* msg);
   assignment wiki.
  */
 int main(int argc, char* argv[]) {
+  if (argc != 3) {
+    printf("Invalid arguments - %s <email-to> <email-filepath>", argv[0]);
+    return -1;
+  }
+
+  char* rcpt = argv[1];
+  char* filepath = argv[2];
+
+  /* 
+     STUDENT CODE HERE
+   */
+  
   return 0;
 }

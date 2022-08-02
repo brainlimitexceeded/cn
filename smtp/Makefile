@@ -7,5 +7,5 @@ PROGRAM	= smtpcmd
 $(PROGRAM): main.c smtp.a
 	$(CC) $(CFLAGS) $(LIBS) -o $@ main.c smtp.a
 
-smtp.a: smtp.c
+smtp.a:
 	$(CC) -c $(CFLAGS) $(LIBS) smtp.c -o smtp.a
