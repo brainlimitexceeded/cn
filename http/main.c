@@ -17,10 +17,15 @@ int main(int argc, char* argv[]) {
   char* host = argv[1];
   char* verb = argv[2];
   char* path = argv[3];
-
-  /*
-    STUDENT CODE HERE
-   */
+  char response[4096];
+   
+  strcat(path, " HTTP/1.1\r\nHost: ");
+  strcat(path, host);
+  strcat(path, "\r\n\r\n");
+  strcat(verb," ");
+  strcat(verb , path);
   
+  send_http(host, verb, response, 4096);
+  printf("%s\n", response); 
   return 0;
 }
