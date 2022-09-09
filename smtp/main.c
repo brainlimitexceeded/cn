@@ -21,9 +21,11 @@ int main(int argc, char* argv[]) {
   char* rcpt = argv[1];
   char* filepath = argv[2];
 
-  /* 
-     STUDENT CODE HERE
-   */
-  
+
+  int socket = connect_smtp("lunar.open.sice.indiana.edu", 25);
+  char response[4096];
+  send_smtp(socket, "Helo iu.edu\n",rersponse,4096);
+  printf("%s\n", response);
   return 0;
 }
+
