@@ -44,7 +44,7 @@ else { // Address is IPv6
   raw_addr = &(tmp->sin6_addr); // Extract the address from the container
 }
 inet_ntop(result->ai_family, raw_addr, addr, 100);
-printf("IPv%d %s\n", result->ai_family == AF_INET?6:4, addr);
+printf("IPv%d %s\n", result->ai_family == AF_INET6?6:4, addr);
 result = result->ai_next;
 }
   return 0;
