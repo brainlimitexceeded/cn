@@ -1,10 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+<<<<<<< HEAD
 #include <netdb.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <string.h>
 #include <arpa/inet.h>
+=======
+>>>>>>> upstream/main
 
 /*
   Use the `getaddrinfo` and `inet_ntop` functions to convert a string host and
@@ -17,6 +20,7 @@ int main(int argc, char* argv[]) {
   }
   char* host = argv[1];
   long port = atoi(argv[2]);
+<<<<<<< HEAD
   struct addrinfo hints, *result;
   char addr[100];
   char str[256];
@@ -47,5 +51,13 @@ inet_ntop(result->ai_family, raw_addr, addr, 100);
 printf("IPv%d %s\n", result->ai_family == AF_INET6?6:4, addr);
 result = result->ai_next;
 }
+=======
+
+  /*
+    STUDENT CODE HERE
+   */
+
+
+>>>>>>> upstream/main
   return 0;
 }

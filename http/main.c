@@ -17,6 +17,7 @@ int main(int argc, char* argv[]) {
   char* host = argv[1];
   char* verb = argv[2];
   char* path = argv[3];
+<<<<<<< HEAD
   char response[4096];
    
   strcat(path, " HTTP/1.1\r\nHost: ");
@@ -27,5 +28,12 @@ int main(int argc, char* argv[]) {
   
   send_http(host, verb, response, 4096);
   printf("%s\n", response); 
+=======
+
+  /*
+    STUDENT CODE HERE
+   */
+  
+>>>>>>> upstream/main
   return 0;
 }

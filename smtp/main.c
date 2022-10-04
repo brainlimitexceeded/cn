@@ -17,6 +17,7 @@ int main(int argc, char* argv[]) {
     printf("Invalid arguments - %s <email-to> <email-filepath>", argv[0]);
     return -1;
   }
+<<<<<<< HEAD
   char* rcpt = argv[1];
   char* filepath = argv[2];
   FILE *fp;
@@ -59,3 +60,15 @@ int main(int argc, char* argv[]) {
 }
 
 
+=======
+
+  char* rcpt = argv[1];
+  char* filepath = argv[2];
+
+  /* 
+     STUDENT CODE HERE
+   */
+  
+  return 0;
+}
+>>>>>>> upstream/main
