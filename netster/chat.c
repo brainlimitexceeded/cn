@@ -170,7 +170,6 @@ void chat_client(char* host, long port, int use_udp) {
     while(flag) {
 	memset(serverMessage,'\0',sizeof(serverMessage));
     	memset(clientMessage,'\0',sizeof(clientMessage));
-	printf("Enter a message\n");
 	int s = scanf("%s",clientMessage);
     	if(s) {
 		strcat(clientMessage,"\n");
