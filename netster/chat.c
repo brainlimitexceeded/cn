@@ -27,14 +27,14 @@ void * socketThread(void *arg)
 	printf("got message from ('%d.%d.%d.%d',%d), %s", (int) (client_addr.sin_addr.s_addr&0xFF) , (int)((client_addr.sin_addr.s_addr&0xFF00)>>8) , (int) ((client_addr.sin_addr.s_addr&0xFF0000)>>16) , (int)((client_addr.sin_addr.s_addr&0xFF000000)>>24) ,ntohs(client_addr.sin_port), client_message); 
   	pthread_mutex_lock(&lock);
   	char *message = malloc(sizeof(client_message)+20);
-  	if(strcmp(client_message, "hello") == 0) {
+  	if(strcmp(client_message, "hello\n") == 0) {
 		strcpy(message,"world\n");
  	 }
-	else if(strcmp(client_message, "goodbye") == 0) {
+	else if(strcmp(client_message, "goodbye\n") == 0) {
 		flag = false;
 		strcpy(message,"farewell\n");
  	 }
-  	else if( strcmp(client_message, "exit") == 0 ){
+  	else if( strcmp(client_message, "exit\n") == 0 ){
 	  	flag = false;
 	  	serve = false;
 	  	strcpy(message,"ok\n");
@@ -116,13 +116,13 @@ void chat_server(char* iface, long port, int use_udp) {
 	else {
 		recvfrom(serverSocket, clientMessage, sizeof(clientMessage), 0, (struct sockaddr *)&client_addr,(unsigned int *)&len ); 
 		printf("got message from ('%d.%d.%d.%d',%d), %s", (int) (client_addr.sin_addr.s_addr&0xFF) , (int)((client_addr.sin_addr.s_addr&0xFF00)>>8) , (int) ((client_addr.sin_addr.s_addr&0xFF0000)>>16) , (int)((client_addr.sin_addr.s_addr&0xFF000000)>>24) ,ntohs(client_addr.sin_port), clientMessage);
-		if(strcmp(clientMessage, "hello") == 0) {
+		if(strcmp(clientMessage, "hello\n") == 0) {
            		strcpy(serverMessage,"world\n");
    		}
-	 	else if( strcmp(clientMessage, "goodbye") == 0 ){
+	 	else if( strcmp(clientMessage, "goodbye\n") == 0 ){
 	 		strcpy(serverMessage,"farewell\n");
 		}
-	 	else if( strcmp(clientMessage, "exit") == 0 ){
+	 	else if( strcmp(clientMessage, "exit\n") == 0 ){
 			strcpy(serverMessage,"ok\n");
   			serve = false;
          	}
@@ -175,7 +175,7 @@ void chat_client(char* host, long port, int use_udp) {
 	 	recvfrom(socket_c, serverMessage, sizeof(serverMessage), 0, (struct sockaddr*)&server_addr, (unsigned int *)&len);
     	}
     	printf("%s",serverMessage);
-    	if( strcmp(serverMessage, "ok") == 0 || strcmp(serverMessage, "farewell") == 0  ) {
+    	if( strcmp(serverMessage, "ok\n") == 0 || strcmp(serverMessage, "farewell\n") == 0  ) {
     		flag = false;
     	}
     }
