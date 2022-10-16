@@ -1,165 +1,153 @@
-/*
- *  Here is the starting point for your netster part.1 definitions. Add the 
- *  appropriate comment header as defined in the code formatting guidelines
- */
 #include <string.h>
 #include <stdbool.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <stdio.h>
-#include <unistd.h> // for close
+#include <unistd.h>
+#include<stdlib.h>
+#include<netinet/in.h>
+#include <fcntl.h>
+#include<pthread.h>
 /* Add function definitions */
-void chat_server(char* iface, long port, int use_udp) {
-	
-    		int server_socket;
-    		struct sockaddr_in server_addr;
-    		int client_socket;
-    		struct sockaddr_in client_addr;
-    		int bind_status, listen_status;
-		int len = sizeof(client_addr);
-		    char server_message[1024], client_message[1024];
+char client_message[1024];
+char buffer[1024];
+bool serve;
+struct sockaddr_in clientAddr;
+int mainSocket, serverSocket;
+//struct sockaddr_in clientAddr;
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
-    memset(server_message,'\0',sizeof(server_message));
-    memset(client_message,'\0',sizeof(client_message));
-		//memset(&client_addr,0,sizeof(client_addr));
-	//	memset(server_message,'\0',sizeof(server_message));
-    	//	memset(client_message,'\0',sizeof(client_message));
-		if(use_udp == 0) {
-    			server_socket = socket(AF_INET, SOCK_STREAM, 0);   
-		}
-		else {
-			server_socket = socket(AF_INET,SOCK_DGRAM, 0);
-		}
-			if (server_socket < 0)
-    		{
-        		printf("Error in socket\n");
-        	}
-    
-    		server_addr.sin_family = AF_INET;
-    		server_addr.sin_port = htons(port);
-    		server_addr.sin_addr.s_addr = inet_addr(iface);
-
-    
-    		bind_status = bind(server_socket, (struct sockaddr *) &server_addr, sizeof(server_addr));
-    		if (bind_status < 0)
-    		{
-        			printf("Error binding socket%d\n",bind_status);
-        	}
-		if(use_udp == 0) {
-			listen_status = listen(server_socket, 10);
-    			if (listen_status == -1)
-    			{
-        			printf("Error listening to socket\n");
-    			}
-		}
-    		bool flag = true;
-    
-    		int count = -1;
-   	
-    		socklen_t addr_len;
-    		addr_len = sizeof(client_socket);
-		if(use_udp == 0) {
-    		client_socket = accept(server_socket, (struct sockaddr *) &client_addr, &addr_len);
-
- 		if (client_socket < 0){
-        		printf("Can't accept client connection\n");
-    		}
-		}
-		else {
-			client_socket = server_socket;
-		}
- 		count = count + 1;
-		if(use_udp == 0) {
- 			printf("connection %d from (",count);
-			printf("'%d.%d.%d.%d',%d)\n",
-  			(int) (client_addr.sin_addr.s_addr&0xFF),
-  			(int) ((client_addr.sin_addr.s_addr&0xFF00)>>8),
-  			(int) ((client_addr.sin_addr.s_addr&0xFF0000)>>16),
- 		 	(int) ((client_addr.sin_addr.s_addr&0xFF000000)>>24), (int)ntohs(client_addr.sin_port) );
-		}
-		while(flag) {
-			//char server_message[1024], client_message[1024];
-		//	    memset(client_message,'\0',sizeof(client_message));
-    		//		memset(server_message,'\0',sizeof(server_message));
-			if(use_udp == 0) {
-			if (recv(client_socket, client_message, sizeof(client_message), 0) < 0){
-			        printf("Couldn't receive\n");
-			}
-			}
-			else {
-				if( recvfrom(server_socket, client_message, sizeof(client_message), 0, (struct sockaddr *)&client_addr,(unsigned int *)&len ) < 0 ) {
-					printf("Error in receiving message\n");
-				}
-			}
-			                                printf("got message from ('%d.%d.%d.%d',%d) %s\n", (int) (client_addr.sin_addr.s_addr&0xFF) , (int)((client_addr.sin_addr.s_addr&0xFF00)>>8) , (int) ((client_addr.sin_addr.s_addr&0xFF0000)>>16) , (int)((client_addr.sin_addr.s_addr&0xFF000000)>>24) ,ntohs(client_addr.sin_port), client_message);
-			int res = -1;
-			//char temp_message[1024];
-			//strcpy(temp_message,client_message);
-			//int result = tolower(&temp_message);
-	 		if(strstr(client_message, "hello")) {
-           			strcpy(server_message,"world\n");
-	  			if(use_udp == 0)
-	  			res = send(client_socket, server_message, strlen(server_message), 0);
- 				else 
-					res = sendto(server_socket, server_message, strlen(server_message), 0 , (struct sockaddr*)&client_addr, sizeof(client_addr) );
-   			 }
-	 		else if( strstr(client_message, "goodbye") ){
-	 			strcpy(server_message,"farewell\n");
-				if(use_udp == 0)
-	   			res = send(client_socket, server_message, strlen(server_message), 0);
-				else
-    	   				res = sendto(server_socket, server_message, strlen(server_message), 0 , (struct sockaddr*)&client_addr, sizeof(client_addr) );
-				count = count+1;
-				if(use_udp == 0){
-					close(client_socket);
-					addr_len = sizeof(client_socket);
-           				client_socket = accept(server_socket, (struct sockaddr *) &client_addr, &addr_len);
-
- 				if (client_socket < 0){
-        				printf("Can't accept\n");
-    				}
-				
- 				printf("connection %d from ('",count);
-				printf("%d.%d.%d.%d',%d)\n", (int) (client_addr.sin_addr.s_addr&0xFF),(int) ((client_addr.sin_addr.s_addr&0xFF00)>>8),(int) ((client_addr.sin_addr.s_addr&0xFF0000)>>16),(int) ((client_addr.sin_addr.s_addr&0xFF000000)>>24), (int)ntohs(client_addr.sin_port) );
-	 			}
-			}
-	 		else if( strstr(client_message, "exit") ){
-                		strcpy(server_message,"ok\n");
-				if(use_udp == 0)
-	   			res = send(client_socket, server_message, strlen(server_message), 0);
-				else
-			                                        res = sendto(server_socket, server_message, strlen(server_message), 0 , (struct sockaddr*)&client_addr, sizeof(client_addr) );
-				flag = false;
-         		}
-	 		else {
-				strcpy(server_message,client_message);
-				if(use_udp == 0)
-	   			res = send(client_socket, server_message, strlen(server_message), 0);
-				else
-                                        res = sendto(server_socket, server_message, strlen(server_message), 0 , (struct sockaddr*)&client_addr, sizeof(client_addr) );
-			 }
-	 		if(res == -1){
-	 			printf("client closed\n");
-	 		}
-			                            memset(client_message,'\0',sizeof(client_message));
-						    memset(server_message,'\0',sizeof(server_message));
-					//	memset(temp_message,'\0',sizeof(temp_message));
-		}
-		if(use_udp == 0) 
-	    		close(client_socket);
-    	  	close(server_socket);
+void * socketThread(void *arg)
+{
+  struct sockaddr_in client_addr = clientAddr;
+  int newSocket = *((int *)arg);
+  bool flag = true;
+  while(flag) {
+  	recv(newSocket , client_message , 1024 , 0);
+	printf("got message from ('%d.%d.%d.%d',%d), %s\n", (int) (client_addr.sin_addr.s_addr&0xFF) , (int)((client_addr.sin_addr.s_addr&0xFF00)>>8) , (int) ((client_addr.sin_addr.s_addr&0xFF0000)>>16) , (int)((client_addr.sin_addr.s_addr&0xFF000000)>>24) ,ntohs(client_addr.sin_port), client_message); 
+  	pthread_mutex_lock(&lock);
+  	char *message = malloc(sizeof(client_message)+20);
+  	if(strstr(client_message, "hello")) {
+		strcpy(message,"world\n");
+ 	 }
+  	else if(strstr(client_message, "goodbye")) {
+		flag = false;
+		strcpy(message,"farewell\n");
+ 	 }
+  	else if( strstr(client_message, "exit") ){
+	  	flag = false;
+	  	serve = false;
+	  	strcpy(message,"ok\n");
+  	}
+  	else {
+    		strcpy(message,client_message);
+    		strcat(message,"\n");
+ 	 }
+  	strcpy(buffer,message);
+  	free(message);
+  	pthread_mutex_unlock(&lock);
+  	sleep(1);
+  	send(newSocket,buffer,13,0);
+  	memset(client_message,'\0',sizeof(client_message));
+  //memset(server_message,'\0',sizeof(server_message));
+  }
+  close(newSocket);
+  if(serve == false) {
+	close(serverSocket);
+	exit(0);
+  }
+  pthread_exit(NULL);
 }
+void chat_server(char* iface, long port, int use_udp) {
+  int  newSocket;
+  int serverSocket;
+  struct sockaddr_in serverAddr, serverStorage;
+   char serverMessage[1024], clientMessage[1024];
+   struct sockaddr_in client_addr;
+   int len = sizeof(client_addr);
+  socklen_t addr_size;
+ 
+  if(use_udp == 0)
+	serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+  else
+	serverSocket = socket(AF_INET,SOCK_DGRAM,0);
 
+  serverAddr.sin_family = AF_INET;
+ 
+  serverAddr.sin_port = htons(port);
+
+  serverAddr.sin_addr.s_addr = inet_addr(iface);
+
+  memset(serverAddr.sin_zero, '\0', sizeof serverAddr.sin_zero);
+ 
+  bind(serverSocket, (struct sockaddr *) &serverAddr, sizeof(serverAddr));
+ 
+  if(use_udp == 0) {
+  	if(listen(serverSocket,50)==0)
+    		printf("Listening\n");
+  	else
+    		printf("Error\n");
+   }
+   pthread_t tid[60];
+   int i = 0;
+   serve = true;
+   mainSocket = serverSocket;
+   while(serve)
+    {
+	if(use_udp == 0) {
+        	addr_size = sizeof serverStorage
+        	newSocket = accept(serverSocket, (struct sockaddr *) &serverStorage, &addr_size);
+		printf("connection %d from (",i);
+		printf("'%d.%d.%d.%d',%d)\n",
+  		(int) (serverStorage.sin_addr.s_addr&0xFF),
+  		(int) ((serverStorage.sin_addr.s_addr&0xFF00)>>8),
+  		(int) ((serverStorage.sin_addr.s_addr&0xFF0000)>>16),
+  		(int) ((serverStorage.sin_addr.s_addr&0xFF000000)>>24), (int)ntohs(serverStorage.sin_port) );
+       		clientAddr = serverStorage;
+        	if( pthread_create(&tid[i++], NULL, socketThread, &newSocket) != 0 )
+           		printf("Failed to create thread\n");
+		if(i >= 50)
+        	{
+			i = 0;
+          		while(i < 50 )
+          		{
+            			pthread_join(tid[i++],NULL);
+          		}
+          		i = 0;
+        	}
+	}
+	else {
+		recvfrom(serverSocket, clientMessage, sizeof(clientMessage), 0, (struct sockaddr *)&client_addr,(unsigned int *)&len ); 
+		printf("got message from ('%d.%d.%d.%d',%d), %s\n", (int) (client_addr.sin_addr.s_addr&0xFF) , (int)((client_addr.sin_addr.s_addr&0xFF00)>>8) , (int) ((client_addr.sin_addr.s_addr&0xFF0000)>>16) , (int)((client_addr.sin_addr.s_addr&0xFF000000)>>24) ,ntohs(client_addr.sin_port), clientMessage);
+		if(strstr(clientMessage, "hello")) {
+           		strcpy(serverMessage,"world\n");
+   		}
+	 	else if( strstr(clientMessage, "goodbye") ){
+	 		strcpy(serverMessage,"farewell\n");
+		}
+	 	else if( strstr(clientMessage, "exit") ){
+			strcpy(serverMessage,"ok\n");
+  			serve = false;
+         	}
+		else {
+			strcpy(serverMessage,clientMessage);
+		 }
+		sendto(serverSocket, serverMessage, strlen(serverMessage), 0 , (struct sockaddr*)&client_addr, sizeof(client_addr) );	 		
+		memset(clientMessage,'\0',sizeof(clientMessage));
+		memset(serverMessage,'\0',sizeof(serverMessage));
+	}
+    }
+   close(serverSocket);
+}
 void chat_client(char* host, long port, int use_udp) {
   
     int socket_c;
     struct sockaddr_in server_addr;
-    char server_message[1024], client_message[1024];
-    
-    memset(server_message,'\0',sizeof(server_message));
-    memset(client_message,'\0',sizeof(client_message));
+    char serverMessage[1024], clientMessage[1024];
+    //memset(serverMessage,'\0',sizeof(serverMessage));
+    //memset(clientMessage,'\0',sizeof(clientMessage));
     if(use_udp == 0) {
-    	socket_c = socket(AF_INET, SOCK_STREAM, 0);
+    	socket_c = socket(PF_INET, SOCK_STREAM, 0);
     }
     else {
     	socket_c = socket(AF_INET, SOCK_DGRAM,0);
@@ -176,44 +164,38 @@ void chat_client(char* host, long port, int use_udp) {
     if(connect(socket_c, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0){
         printf("Error to connect with server\n");
     }
+    //printf("%d\n",serve);
     }
     bool flag = true;
     while(flag) {
-	    memset(server_message,'\0',sizeof(server_message));
-    		memset(client_message,'\0',sizeof(client_message));
-
-	//char server_message[2000], client_message[2000];
+	memset(serverMessage,'\0',sizeof(serverMessage));
+    	memset(clientMessage,'\0',sizeof(clientMessage));
 	printf("Enter a message\n");
-	int s = scanf("%s",client_message);
+	int s = scanf("%s",clientMessage);
     	if(s) {
-		strcat(client_message,"\n");
+		strcat(clientMessage,"\n");
 	}
-    if(use_udp == 0) {
-    if(send(socket_c, client_message, strlen(client_message), 0) < 0){
-        printf("Error to send message\n");
-    }
-     if(recv(socket_c, server_message, sizeof(server_message), 0) < 0){
-        printf("Error while receiving server's msg\n");
-    }
-    }
-    else {
-    	if( sendto(socket_c, client_message, strlen(client_message),0, (struct sockaddr*)&server_addr, sizeof(server_addr)) <0 ) {
-		printf("Error sending message\n");
-	}
-	int len = sizeof(server_addr);
-	 if(recvfrom(socket_c, server_message, sizeof(server_message), 0, (struct sockaddr*)&server_addr, (unsigned int *)&len) < 0){
-        	printf("Error while receiving server's msg\n");
+    	if(use_udp == 0) {
+    		if(send(socket_c, clientMessage, strlen(clientMessage), 0) < 0){
+        		printf("Error to send message\n");
+    		}
+     		if(recv(socket_c, serverMessage, sizeof(serverMessage), 0) < 0){
+        		printf("Error while receiving server's msg\n");
+    		}
+    	}
+    	else {
+    		if( sendto(socket_c, clientMessage, strlen(clientMessage),0, (struct sockaddr*)&server_addr, sizeof(server_addr)) <0 ) {
+			printf("Error sending message\n");
+		}
+		int len = sizeof(server_addr);
+	 	if(recvfrom(socket_c, serverMessage, sizeof(serverMessage), 0, (struct sockaddr*)&server_addr, (unsigned int *)&len) < 0){
+        		printf("Error while receiving server's msg\n");
+    		}
+    	}
+    	printf("%s",serverMessage);
+    	if( strstr(serverMessage, "ok") || strstr(serverMessage, "farewell")  ) {
+    		flag = false;
     	}
     }
-    
-    printf("Server's response: %s\n",server_message);
-    //int r = tolower(server_message)
-    if( strstr(server_message, "ok") || strstr(server_message, "farewell")  ) {
-    	flag = false;
-    }
-    }
-   
     close(socket_c);
-    
-    
-}
+ }
