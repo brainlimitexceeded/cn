@@ -95,7 +95,7 @@ void chat_server(char* iface, long port, int use_udp) {
    while(serve)
     {
 	if(use_udp == 0) {
-        	addr_size = sizeof serverStorage
+        	addr_size = sizeof serverStorage;
         	newSocket = accept(serverSocket, (struct sockaddr *) &serverStorage, &addr_size);
 		printf("connection %d from (",i);
 		printf("'%d.%d.%d.%d',%d)\n",
