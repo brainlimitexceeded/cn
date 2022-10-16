@@ -137,14 +137,14 @@ void chat_server(char* iface, long port, int use_udp) {
    close(serverSocket);
 }
 void chat_client(char* host, long port, int use_udp) {
-  
+    printf("%ld",port); 
     int socket_c;
     struct sockaddr_in server_addr;
     char serverMessage[1024], clientMessage[1024];
     //memset(serverMessage,'\0',sizeof(serverMessage));
     //memset(clientMessage,'\0',sizeof(clientMessage));
     if(use_udp == 0) {
-    	socket_c = socket(PF_INET, SOCK_STREAM, 0);
+    	socket_c = socket(AF_INET, SOCK_STREAM, 0);
     }
     else {
     	socket_c = socket(AF_INET, SOCK_DGRAM,0);
