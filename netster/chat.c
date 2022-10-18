@@ -50,7 +50,7 @@ void * socketThread(void *arg)
   	free(message);
   	pthread_mutex_unlock(&lock);
   	sleep(1);
-  	send(newSocket,buffer,13,0);
+  	send(newSocket,buffer,strlen(buffer),0);
   	memset(client_message,'\0',sizeof(client_message));
   //memset(server_message,'\0',sizeof(server_message));
   }
@@ -113,7 +113,7 @@ inet_ntop(result->ai_family, raw_addr, addr, 100);
   else
 	serverSocket = socket(AF_INET,SOCK_DGRAM,0);
 
-  serverAddr.sin_family = AF_INET;
+  serverAddr.sin_family = result->ai_family;
  
   serverAddr.sin_port = htons(port);
 
