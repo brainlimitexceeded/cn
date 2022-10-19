@@ -29,6 +29,8 @@ void * socketThread(void *arg)
   	recv(newSocket , client_message , 256 , 0);
 	printf("got message from ('%d.%d.%d.%d',%d), %s", (int) (client_addr.sin_addr.s_addr&0xFF) , (int)((client_addr.sin_addr.s_addr&0xFF00)>>8) , (int) ((client_addr.sin_addr.s_addr&0xFF0000)>>16) , (int)((client_addr.sin_addr.s_addr&0xFF000000)>>24) ,ntohs(client_addr.sin_port), client_message); 
   	pthread_mutex_lock(&lock);
+	if(strstr(client_message,"\n") == NULL)
+	       strcat(client_message,"\n");	
   	char *message = malloc(sizeof(client_message)+20);
   	if(strcmp(client_message, "hello\n") == 0) {
 		strcpy(message,"world\n");
@@ -44,7 +46,6 @@ void * socketThread(void *arg)
   	}
   	else {
     		strcpy(message,client_message);
-	//	strcat(message,"\n");
  	 }
   	strcpy(buffer,message);
   	free(message);
