@@ -12,8 +12,6 @@
 #include <fcntl.h>
 #include<pthread.h>
 /* Add function definitions */
-char client_message[1024];
-char buffer[1024];
 bool serve;
 struct sockaddr_in clientAddr;
 int mainSocket, serverSocket;
@@ -25,8 +23,10 @@ void * socketThread(void *arg)
   struct sockaddr_in client_addr = clientAddr;
   int newSocket = *((int *)arg);
   bool flag = true;
+  char client_message[256];
+  char buffer[256];
   while(flag) {
-  	recv(newSocket , client_message , 1024 , 0);
+  	recv(newSocket , client_message , 256 , 0);
 	printf("got message from ('%d.%d.%d.%d',%d), %s", (int) (client_addr.sin_addr.s_addr&0xFF) , (int)((client_addr.sin_addr.s_addr&0xFF00)>>8) , (int) ((client_addr.sin_addr.s_addr&0xFF0000)>>16) , (int)((client_addr.sin_addr.s_addr&0xFF000000)>>24) ,ntohs(client_addr.sin_port), client_message); 
   	pthread_mutex_lock(&lock);
   	char *message = malloc(sizeof(client_message)+20);
@@ -52,7 +52,7 @@ void * socketThread(void *arg)
   	sleep(1);
   	send(newSocket,buffer,strlen(buffer),0);
   	memset(client_message,'\0',sizeof(client_message));
-  //memset(server_message,'\0',sizeof(server_message));
+        memset(buffer,'\0',sizeof(buffer));
   }
   close(newSocket);
   if(serve == false) {
@@ -65,7 +65,7 @@ void chat_server(char* iface, long port, int use_udp) {
   int  newSocket;
   int serverSocket;
   struct sockaddr_in serverAddr, serverStorage;
-   char serverMessage[1024], clientMessage[1024];
+   char serverMessage[256], clientMessage[256];
    struct sockaddr_in client_addr;
    int len = sizeof(client_addr);
   socklen_t addr_size;
@@ -73,7 +73,7 @@ void chat_server(char* iface, long port, int use_udp) {
 
 //here
 struct addrinfo hints, *result;
-  char addr[100];
+  char addr[256];
   char str[256];
   sprintf(str,"%ld",port);
   memset(&hints, 0, sizeof(hints));
@@ -92,7 +92,7 @@ struct addrinfo hints, *result;
         perror("getaddrinfo");
   }
  //while(result) {
-  inet_ntop(result->ai_family, result->ai_addr->sa_data,addr,100);
+  inet_ntop(result->ai_family, result->ai_addr->sa_data,addr,256);
   void* raw_addr;
 if (result->ai_family == AF_INET) { // Address is IPv4
   struct sockaddr_in* tmp = (struct sockaddr_in*)result->ai_addr; // Cast addr into AF_INET container
@@ -102,7 +102,7 @@ else { // Address is IPv6
   struct sockaddr_in6* tmp = (struct sockaddr_in6*)result->ai_addr; // Cast addr into AF_INET6 container
   raw_addr = &(tmp->sin6_addr); // Extract the address from the container
 }
-inet_ntop(result->ai_family, raw_addr, addr, 100);
+inet_ntop(result->ai_family, raw_addr, addr, 256);
 //printf("IPv%d %s\n", result->ai_family == AF_INET6?6:4, addr);
 //result = result->ai_next;
 //}
@@ -181,7 +181,7 @@ void chat_client(char* host, long port, int use_udp) {
     //printf("%ld",port); 
     int socket_c;
     struct sockaddr_in server_addr;
-    char serverMessage[1024], clientMessage[1024];
+    char serverMessage[256], clientMessage[256];
 
 //here
 struct addrinfo hints, *result;
@@ -240,7 +240,7 @@ inet_ntop(result->ai_family, raw_addr, addr, 100);
     while(flag) {
 	memset(serverMessage,'\0',sizeof(serverMessage));
     	memset(clientMessage,'\0',sizeof(clientMessage));
-	char *s = fgets(clientMessage, 1024, stdin);
+	char *s = fgets(clientMessage, 256, stdin);
 	//int s = scanf("%s[^\n]",clientMessage);
     	if(s != NULL) {
 	//	strcat(clientMessage,"\n");
