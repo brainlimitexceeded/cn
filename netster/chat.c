@@ -94,6 +94,9 @@ struct addrinfo hints, *result;
  //while(result) {
   inet_ntop(result->ai_family, result->ai_addr->sa_data,addr,256);
   void* raw_addr;
+  if (result->ai_family != AF_INET) { // Address is IPv4
+  	result=result->ai_next;
+  }
 if (result->ai_family == AF_INET) { // Address is IPv4
   struct sockaddr_in* tmp = (struct sockaddr_in*)result->ai_addr; // Cast addr into AF_INET container
   raw_addr = &(tmp->sin_addr); // Extract the address from the container
@@ -206,6 +209,9 @@ struct addrinfo hints, *result;
  //while(result) {
   inet_ntop(result->ai_family, result->ai_addr->sa_data,addr,100);
   void* raw_addr;
+    if (result->ai_family != AF_INET) { // Address is IPv4
+    	result=result->ai_next;
+    }
 if (result->ai_family == AF_INET) { // Address is IPv4
   struct sockaddr_in* tmp = (struct sockaddr_in*)result->ai_addr; // Cast addr into AF_INET container
   raw_addr = &(tmp->sin_addr); // Extract the address from the container
