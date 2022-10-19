@@ -63,7 +63,7 @@ void * socketThread(void *arg)
 }
 void chat_server(char* iface, long port, int use_udp) {
   int  newSocket;
-  int serverSocket;
+  //int serverSocket;
   struct sockaddr_in serverAddr, serverStorage;
    char serverMessage[256], clientMessage[256];
    struct sockaddr_in client_addr;
@@ -77,7 +77,7 @@ struct addrinfo hints, *result;
   char str[256];
   sprintf(str,"%ld",port);
   memset(&hints, 0, sizeof(hints));
-  hints.ai_family = PF_UNSPEC;
+  hints.ai_family = AF_INET;
   if(use_udp == 0) {
         hints.ai_socktype = SOCK_STREAM;
         hints.ai_protocol = IPPROTO_TCP;
@@ -109,9 +109,9 @@ inet_ntop(result->ai_family, raw_addr, addr, 256);
 //here
 
   if(use_udp == 0)
-	serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	serverSocket = socket(AF_INET, SOCK_STREAM, result->ai_protocol);
   else
-	serverSocket = socket(AF_INET,SOCK_DGRAM,0);
+	serverSocket = socket(AF_INET,SOCK_DGRAM,result->ai_protocol);
 
   serverAddr.sin_family = result->ai_family;
  
@@ -189,7 +189,7 @@ struct addrinfo hints, *result;
   char str[256];
   sprintf(str,"%ld",port);
   memset(&hints, 0, sizeof(hints));
-  hints.ai_family = PF_UNSPEC;
+  hints.ai_family = AF_INET;
   if(use_udp == 0) {
   	hints.ai_socktype = SOCK_STREAM;
         hints.ai_protocol = IPPROTO_TCP;
@@ -223,10 +223,10 @@ inet_ntop(result->ai_family, raw_addr, addr, 100);
     //memset(serverMessage,'\0',sizeof(serverMessage));
     //memset(clientMessage,'\0',sizeof(clientMessage));
     if(use_udp == 0) {
-    	socket_c = socket(result->ai_family, SOCK_STREAM, 0);
+    	socket_c = socket(result->ai_family, SOCK_STREAM, result->ai_protocol);
     }
     else {
-    	socket_c = socket(result->ai_family, SOCK_DGRAM,0);
+    	socket_c = socket(result->ai_family, SOCK_DGRAM,result->ai_protocol);
     }
     server_addr.sin_family = result->ai_family;
     server_addr.sin_port = htons(port);
