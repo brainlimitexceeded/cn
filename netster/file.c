@@ -45,12 +45,13 @@ if(use_udp == 0) {
     client_socket = accept(server_socket, (struct sockaddr *)&server_addr,
                           (socklen_t *)&addrlength);
     if(client_socket == -1) {
-    	printf("Error connecting to client");
+    	printf("Error connecting to client\n");
     }
     int n;
     char buffer[256];
     while(1) {
-    	n = recv(server_socket,buffer,256,0);
+    	n = read(client_socket,buffer,256);
+	//printf("%d %s\n",n,buffer);
 	if(n<=0) {
 		break;
 		return;
@@ -61,8 +62,34 @@ if(use_udp == 0) {
     close(server_socket);
 }
 else {
+    int socket_server;
+    char buffer[MAXBYTES];
+    struct sockaddr_in saddr, caddr;
+    socket_server = socket(AF_INET, SOCK_DGRAM, 0);
 
-}
+    memset(&saddr, 0, sizeof(saddr));
+    memset(&caddr, 0, sizeof(caddr));
+
+    saddr.sin_family = AF_INET;
+    saddr.sin_addr.s_addr = INADDR_ANY;
+    saddr.sin_port = htons(port);
+
+    bind(socket_server, (const struct sockaddr *)&saddr, sizeof(saddr));
+    int n;
+    int length;
+    length = sizeof(caddr);
+    while(1) {
+        n = recvfrom(socket_server,(char *)buffer,256, MSG_WAITALL, (struct sockaddr *)&caddr, (unsigned int *)&length);
+        //printf("%d %s\n",n,buffer);
+        if(n<=0) {
+                break;
+                return;
+        }
+        fprintf(fp,"%s", buffer);
+        bzero(buffer,256);
+    }
+    close(socket_server);
+    }
 }
 void file_client(char* iface, long port, int use_udp, FILE* fp) {
   struct addrinfo hints, *result;
@@ -103,14 +130,32 @@ int sock = 0;
     serv_addr.sin_addr.s_addr = inet_addr(adr);
 
     connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
-    int n;
+    //int n;
     while(fgets(buffer,256,fp)!= NULL) {
-    	send(sock,buffer, sizeOf(buffer),0);
+	//printf("%s",buffer);
+    	send(sock,buffer, sizeof(buffer),0);
+	//printf("%d\n",k);
 	bzero(buffer,256);
     }
     close(sock);
 }
 else {
+int socket_server;
+    char buffer[MAXBYTES];
+    struct sockaddr_in saddr;
 
+    socket_server = socket(AF_INET, SOCK_DGRAM, 0);
+    memset(&saddr, 0, sizeof(saddr));
+    saddr.sin_family = AF_INET;
+    saddr.sin_port = htons(port);
+    saddr.sin_addr.s_addr = inet_addr(adr);
+    while(fgets(buffer,256,fp)!= NULL) {
+	    //printf("%s",buffer);
+        sendto(socket_server,(char *)buffer, MAXBYTES,0,(const struct sockaddr *)&saddr,sizeof(saddr));
+        //printf("%d\n",k);
+        bzero(buffer,256);
+    }
+    sendto(socket_server,(char *)buffer, 0,0,(const struct sockaddr *)&saddr,sizeof(saddr));
+    close(socket_server);
 }
 }
