@@ -50,7 +50,7 @@ if(use_udp == 0) {
     int n;
     char buffer[256];
     while(1) {
-    	n = recv(server_socket,buffer,256,0);
+    	n = recv(client_socket,buffer,sizeof(buffer),0);
 	//printf("%d %s\n",n,buffer);
 	if(n<=0) {
 		break;
@@ -79,7 +79,7 @@ else {
     int length;
     length = sizeof(caddr);
     while(1) {
-        n = recvfrom(socket_server,(char *)buffer,256, MSG_WAITALL, (struct sockaddr *)&caddr, (unsigned int *)&length);
+        n = recvfrom(socket_server,(char *)buffer, sizeof(buffer) , 0, (struct sockaddr *)&caddr, (unsigned int *)&length);
         //printf("%d %s\n",n,buffer);
         if(n<=0) {
                 break;
@@ -137,7 +137,7 @@ int sock = 0;
 	//printf("%d\n",k);
 	bzero(buffer,256);
     }
-    send(sock,buffer, 0,0);
+    send(sock,buffer,strlen(buffer),0);
     close(sock);
 }
 else {
@@ -152,11 +152,12 @@ int socket_server;
     saddr.sin_addr.s_addr = inet_addr(adr);
     while(fgets(buffer,256,fp)!= NULL) {
 	    //printf("%s",buffer);
-        sendto(socket_server,(char *)buffer, MAXBYTES,0,(const struct sockaddr *)&saddr,sizeof(saddr));
+        sendto(socket_server,(char *)buffer, strlen(buffer),0,(const struct sockaddr *)&saddr,sizeof(saddr));
         //printf("%d\n",k);
         bzero(buffer,256);
     }
-    sendto(socket_server,(char *)buffer, 0,0,(const struct sockaddr *)&saddr,sizeof(saddr));
+    sendto(socket_server,(char *)buffer, strlen(buffer),0,(const struct sockaddr *)&saddr,sizeof(saddr));
     close(socket_server);
 }
 }
+
