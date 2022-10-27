@@ -50,7 +50,7 @@ if(use_udp == 0) {
     int n;
     char buffer[256];
     while(1) {
-    	n = read(client_socket,buffer,256);
+    	n = recv(server_socket,buffer,256,0);
 	//printf("%d %s\n",n,buffer);
 	if(n<=0) {
 		break;
@@ -137,6 +137,7 @@ int sock = 0;
 	//printf("%d\n",k);
 	bzero(buffer,256);
     }
+    send(sock,buffer, 0,0);
     close(sock);
 }
 else {
