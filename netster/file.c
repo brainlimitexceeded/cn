@@ -133,7 +133,7 @@ int sock = 0;
     //int n;
     while(fgets(buffer,256,fp)!= NULL) {
 	//printf("%s",buffer);
-    	send(sock,buffer, sizeof(buffer),0);
+    	send(sock,buffer, strlen(buffer),0);
 	//printf("%d\n",k);
 	bzero(buffer,256);
     }
