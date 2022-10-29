@@ -49,14 +49,15 @@ if(use_udp == 0) {
     }
     int n;
     char buffer[256];
+    bzero(buffer,256);
     while(1) {
     	n = recv(client_socket,buffer,sizeof(buffer),0);
 	//printf("%d %s\n",n,buffer);
 	if(n<=0) {
 		break;
-		return;
 	}
-	fprintf(fp,"%s", buffer);
+	fwrite(buffer,1,n,fp);
+	//fprintf(fp,"%s", buffer);
 	bzero(buffer,256);
     }
     close(server_socket);
@@ -83,9 +84,9 @@ else {
         //printf("%d %s\n",n,buffer);
         if(n<=0) {
                 break;
-                return;
         }
-        fprintf(fp,"%s", buffer);
+	fwrite(buffer,1,n,fp);
+        //fprintf(fp,"%s", buffer);
         bzero(buffer,256);
     }
     close(socket_server);
@@ -131,13 +132,16 @@ int sock = 0;
 
     connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
     //int n;
-    while(fgets(buffer,256,fp)!= NULL) {
+    int bufsize;
+    bzero(buffer,256);
+    while( (bufsize = fread(buffer,1,256,fp)) > 0  ) {
 	//printf("%s",buffer);
-    	send(sock,buffer, strlen(buffer),0);
+    	send(sock,buffer, bufsize,0);
 	//printf("%d\n",k);
-	bzero(buffer,256);
+	//bzero(buffer,256);
     }
-    send(sock,buffer,strlen(buffer),0);
+    //bzero(buffer,256);
+    //send(sock,buffer,strlen(buffer),0);
     close(sock);
 }
 else {
@@ -150,12 +154,17 @@ int socket_server;
     saddr.sin_family = AF_INET;
     saddr.sin_port = htons(port);
     saddr.sin_addr.s_addr = inet_addr(adr);
-    while(fgets(buffer,256,fp)!= NULL) {
+    int bufsize;
+    bzero(buffer,256);
+    while( ( bufsize = fread(buffer,1,256,fp)  )>0 ) {
+    //while(fgets(buffer,256,fp)!= NULL) {
 	    //printf("%s",buffer);
-        sendto(socket_server,(char *)buffer, strlen(buffer),0,(const struct sockaddr *)&saddr,sizeof(saddr));
+        sendto(socket_server,(char *)buffer, bufsize,0,(const struct sockaddr *)&saddr,sizeof(saddr));
         //printf("%d\n",k);
-        bzero(buffer,256);
+        //bzero(buffer,256);
     }
+    //strcpy(buffer,"\n");
+    bzero(buffer,256);
     sendto(socket_server,(char *)buffer, strlen(buffer),0,(const struct sockaddr *)&saddr,sizeof(saddr));
     close(socket_server);
 }
