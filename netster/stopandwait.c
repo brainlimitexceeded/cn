@@ -53,11 +53,11 @@ void stopandwait_server(char* iface, long port, FILE* fp) {
     while(flag) {
         n = recvfrom(socket_server,(char *)buffer, sizeof(buffer) , 0, (struct sockaddr *)&caddr, (unsigned int *)&length);
         if(n<=0) {
-                break;
+            break;
         }
         memcpy(&rdt_server, buffer, sizeof(rdt_server));
         if (rdt_server.len < MAXBYTES-8){
-                flag = false;
+            flag = false;
         }
 	    //fwrite(buffer,1,n,fp);
         // bzero(buffer,256);
@@ -70,7 +70,6 @@ void stopandwait_server(char* iface, long port, FILE* fp) {
             bzero(buffer,MAXBYTES);
             sequence_id = rdt_server.sequence;
         }
-
     }
     close(socket_server);
 }
