@@ -9,7 +9,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <stdbool.h>
-#define MAXBYTES 256
+#define MAXBYTES 2048
 /*
  *  Here is the starting point for your netster part.3 definitions. Add the 
  *  appropriate comment header as defined in the code formatting guidelines
