@@ -9,7 +9,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <stdbool.h>
-#define MAXBYTES 256
+#define MAXBYTES 2048
 /*
  *  Here is the starting point for your netster part.3 definitions. Add the 
  *  appropriate comment header as defined in the code formatting guidelines
@@ -23,7 +23,7 @@ void stopandwait_server(char* iface, long port, FILE* fp) {
     struct addrinfo hints, *result;
     header rdt_server;
     char str[MAXBYTES];
-    // sprintf(str, "%ld", port);
+    sprintf(str, "%ld", port);
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_DGRAM;
@@ -53,23 +53,24 @@ void stopandwait_server(char* iface, long port, FILE* fp) {
     while(flag) {
         n = recvfrom(socket_server,(char *)buffer, sizeof(buffer) , 0, (struct sockaddr *)&caddr, (unsigned int *)&length);
         if(n<=0) {
-            break;
+                break;
         }
         memcpy(&rdt_server, buffer, sizeof(rdt_server));
         if (rdt_server.len < MAXBYTES-8){
-            flag = false;
+                flag = false;
         }
 	    //fwrite(buffer,1,n,fp);
         // bzero(buffer,256);
         if(sequence_id!=rdt_server.sequence){
             memcpy(&temp, buffer + sizeof(rdt_server), sizeof(temp));
             fwrite(temp,1,rdt_server.len,fp);
-            char str[100];
-            sprintf(str, "%d", rdt_server.sequence);
-            sendto(socket_server, str, sizeof(str),0, (const struct sockaddr *)&caddr,length);
+            char s[100];
+            sprintf(s, "%d", rdt_server.sequence);
+            sendto(socket_server, s, sizeof(s),0, (const struct sockaddr *)&caddr,length);
             bzero(buffer,MAXBYTES);
             sequence_id = rdt_server.sequence;
         }
+
     }
     close(socket_server);
 }
