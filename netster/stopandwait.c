@@ -128,11 +128,12 @@ void stopandwait_client(char* iface, long port, FILE* fp) {
         while (1)
         {
             sendto(socket_server, buffer, sizeof(buffer), 0, (const struct sockaddr *)&saddr, sizeof(saddr));
-            recvfrom(socket_server, (char *)buffer, MAXBYTES, MSG_WAITALL, (struct sockaddr *)&saddr, (unsigned int *)&length);
-            if (atoi(buffer) == packet_count)
-            {
-                break;
-            }
+            if(recvfrom(socket_server, (char *)buffer, MAXBYTES, MSG_WAITALL, (struct sockaddr *)&saddr, (unsigned int *)&length)>=1) {
+            	if (atoi(buffer) == packet_count)
+            	{
+                	break;
+            	}
+	    }
         }
         if (temp_size < MAXBYTES-8)
         {
