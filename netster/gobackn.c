@@ -46,12 +46,7 @@ void gbn_server(char* iface, long port, FILE* fp) {
     saddr.sin_addr.s_addr = INADDR_ANY;
     saddr.sin_port = htons(port);
 
-    if(bind(socket_server, (const struct sockaddr *)&saddr, sizeof(saddr))<0) {
-    	printf("bind failed\n");
-    }
-    else {
-    	printf("bind works\n");
-    }
+    bind(socket_server, (const struct sockaddr *)&saddr, sizeof(saddr));
     int n;
     int length;
     int sequence_id=-1;
@@ -63,12 +58,12 @@ void gbn_server(char* iface, long port, FILE* fp) {
 	//printf("goes here\n");
         n = recvfrom(socket_server,(char *)buffer, MAXBYTES , 0, (struct sockaddr *)&caddr, (unsigned int *)&length);
         //printf("%d\n",n);
-	if(n<=0) {
+	    if(n<=0) {
             continue;
         }
         bzero(&rdt_server.sequence,sizeof(rdt_server.sequence));
        	memcpy(&rdt_server, buffer, sizeof(rdt_server));
-	char s[100];
+	    char s[100];
         if(sequence_id+1==rdt_server.sequence){
             if(rdt_server.len < MAXBYTES-8){
                 flag = false;
@@ -79,8 +74,8 @@ void gbn_server(char* iface, long port, FILE* fp) {
             sendto(socket_server, s, sizeof(s),0, (const struct sockaddr *)&caddr,length);
             //bzero(buffer,MAXBYTES);
             if(!flag) {
-		sendto(socket_server, s, sizeof(s),0, (const struct sockaddr *)&caddr,length);
-	    }
+		        sendto(socket_server, s, sizeof(s),0, (const struct sockaddr *)&caddr,length);
+	        }
             sequence_id+=1;
         }
         else {
@@ -124,10 +119,10 @@ void gbn_client(char* iface, long port, FILE* fp) {
     int length, temp_size;
     char temp[MAXBYTES-8];
     int start = 0;
-    int next = 0;
+    int n = 0;
     long end = 5000;
     int window = 10;
-    char message[1000][MAXBYTES];
+    char message[MAXBYTES*2][MAXBYTES];
     int seq = -1;
     socket_server = socket(AF_INET, SOCK_DGRAM, 0);
     memset(&saddr, 0, sizeof(saddr));
@@ -143,26 +138,26 @@ void gbn_client(char* iface, long port, FILE* fp) {
     setsockopt(socket_server, SOL_SOCKET, SO_RCVTIMEO, &t,sizeof(t));
     
     while(flag) {
-        if(seq == -1) {
-            if(next<window+start) {
+        if(window+start>n) {
+            if(seq<0) {
                 bzero(&temp, MAXBYTES-8);
                 temp_size = fread(&temp,1,MAXBYTES-8,fp);
                 h.len = temp_size;
-                h.sequence = next;
+                h.sequence = n;
                 bzero(buffer,MAXBYTES);
                 memcpy(buffer, &h, sizeof(h));
                 memcpy(buffer + sizeof(h), &temp, temp_size);
-                bzero(&message[next], MAXBYTES);
-                memcpy(message[next], &buffer, sizeof(buffer));
+                bzero(&message[n], MAXBYTES);
+                memcpy(message[n], &buffer, sizeof(buffer));
 
                 sendto(socket_server, &buffer, sizeof(buffer), 0, (const struct sockaddr *)&saddr, sizeof(saddr));
-                if(next == start) {
+                if(start == n) {
                     gettimeofday(&e,NULL);
                 }
                 if(temp_size<MAXBYTES-8) {
-                    seq = next;
+                    seq = n;
                 }
-                next+=1;
+                n+=1;
             }
         }
         int r = recvfrom(socket_server, (char *)buffer, MAXBYTES, MSG_WAITALL, (struct sockaddr *)&caddr, (unsigned int *)&length);
@@ -173,21 +168,21 @@ void gbn_client(char* iface, long port, FILE* fp) {
             }
         }
         gettimeofday(&e, NULL);
-        if( (e.tv_sec-s.tv_sec)*1000000 > end) {
-            if(window>1) {
-                window/=2;
-            }
-            gettimeofday(&s,NULL);
-            int value = start;
-            while(value<next) {
-                sendto(socket_server, &message[value], sizeof(message[value]), 0, (const struct sockaddr *)&saddr, sizeof(saddr));
-            	++value;
-	    }
-        }
-        else {
+        if( (e.tv_sec-s.tv_sec)*1000000 <= end) {
             ++window;
+            continue;
         }
+        if(window>1) {
+            window/=2;
+        }
+        gettimeofday(&s,NULL);
+        int value = start;
+        while(value<n) {
+            sendto(socket_server, &message[value], sizeof(message[value]), 0, (const struct sockaddr *)&saddr, sizeof(saddr));
+            ++value;
+	    }
     }
     close(socket_server);
 }
+
 
