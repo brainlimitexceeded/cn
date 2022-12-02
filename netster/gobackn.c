@@ -9,13 +9,15 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <stdbool.h>
-#define MAXBYTES 2048
+#include <sys/time.h>
+#define MAXBYTES 1024
 /*
  *  Here is the starting point for your netster part.4 definitions. Add the 
  *  appropriate comment header as defined in the code formatting guidelines
  */
 
 /* Add function definitions */
+//Referred to psuedo code online 
 typedef struct  {
 int sequence;
 int len;
@@ -33,18 +35,23 @@ void gbn_server(char* iface, long port, FILE* fp) {
     getaddrinfo(iface, str, &hints, &result); 
     int socket_server;
     char buffer[MAXBYTES];
+    int op = 1;
     struct sockaddr_in saddr, caddr;
     socket_server = socket(AF_INET, SOCK_DGRAM, 0);
-    int op = 1;
     setsockopt(socket_server, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &op, sizeof(op));
     memset(&saddr, 0, sizeof(saddr));
     memset(&caddr, 0, sizeof(caddr));
-
+    //printf("%d\n",socket_server);
     saddr.sin_family = AF_INET;
     saddr.sin_addr.s_addr = INADDR_ANY;
     saddr.sin_port = htons(port);
 
-    bind(socket_server, (const struct sockaddr *)&saddr, sizeof(saddr));
+    if(bind(socket_server, (const struct sockaddr *)&saddr, sizeof(saddr))<0) {
+    	printf("bind failed\n");
+    }
+    else {
+    	printf("bind works\n");
+    }
     int n;
     int length;
     int sequence_id=-1;
@@ -53,13 +60,15 @@ void gbn_server(char* iface, long port, FILE* fp) {
     length = sizeof(caddr);
     bzero(buffer,MAXBYTES);
     while(flag) {
-        n = recvfrom(socket_server,(char *)buffer, sizeof(buffer) , 0, (struct sockaddr *)&caddr, (unsigned int *)&length);
-        if(n<=0) {
+	//printf("goes here\n");
+        n = recvfrom(socket_server,(char *)buffer, MAXBYTES , 0, (struct sockaddr *)&caddr, (unsigned int *)&length);
+        //printf("%d\n",n);
+	if(n<=0) {
             continue;
         }
-        memcpy(&rdt_server, buffer, sizeof(rdt_server));
         bzero(&rdt_server.sequence,sizeof(rdt_server.sequence));
-        char s[100];
+       	memcpy(&rdt_server, buffer, sizeof(rdt_server));
+	char s[100];
         if(sequence_id+1==rdt_server.sequence){
             if(rdt_server.len < MAXBYTES-8){
                 flag = false;
@@ -70,10 +79,8 @@ void gbn_server(char* iface, long port, FILE* fp) {
             sendto(socket_server, s, sizeof(s),0, (const struct sockaddr *)&caddr,length);
             //bzero(buffer,MAXBYTES);
             if(!flag) {
-                for(int iter=0;iter<5;iter++) {
-                    sendto(socket_server, s, sizeof(s),0, (const struct sockaddr *)&caddr,length);
-                }
-            }
+		sendto(socket_server, s, sizeof(s),0, (const struct sockaddr *)&caddr,length);
+	    }
             sequence_id+=1;
         }
         else {
@@ -166,15 +173,16 @@ void gbn_client(char* iface, long port, FILE* fp) {
             }
         }
         gettimeofday(&e, NULL);
-        if( e.tv_sec-s.tv_sec > end) {
-            if( window>1) {
+        if( (e.tv_sec-s.tv_sec)*1000000 > end) {
+            if(window>1) {
                 window/=2;
             }
             gettimeofday(&s,NULL);
             int value = start;
             while(value<next) {
                 sendto(socket_server, &message[value], sizeof(message[value]), 0, (const struct sockaddr *)&saddr, sizeof(saddr));
-            }
+            	++value;
+	    }
         }
         else {
             ++window;
@@ -182,3 +190,4 @@ void gbn_client(char* iface, long port, FILE* fp) {
     }
     close(socket_server);
 }
+
