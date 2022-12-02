@@ -1,17 +1,4 @@
 #include <stdio.h>
-/*
- *  Here is the starting point for your netster part.4 definitions. Add the 
- *  appropriate comment header as defined in the code formatting guidelines
- */
-
-/* Add function definitions */
-void gbn_server(char* iface, long port, FILE* fp) {
-  
-}
-
-void gbn_client(char* host, long port, FILE* fp) {
-  
-#include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
@@ -34,7 +21,7 @@ int sequence;
 int len;
 } header;
 void gbn_server(char* iface, long port, FILE* fp) {
-  struct addrinfo hints, *result;
+    struct addrinfo hints, *result;
     header rdt_server;
     char str[MAXBYTES];
     sprintf(str, "%ld", port);
@@ -110,7 +97,6 @@ void gbn_client(char* iface, long port, FILE* fp) {
     getaddrinfo(iface, str, &hints, &result);
     struct addrinfo *current;
     char adr[INET6_ADDRSTRLEN];
-    int packet_count = 1;
     for (current = result; current != NULL; current = current->ai_next) {
         void *raw_addr;
         if (current->ai_family == AF_INET) {
@@ -132,7 +118,6 @@ void gbn_client(char* iface, long port, FILE* fp) {
     char temp[MAXBYTES-8];
     int start = 0;
     int next = 0;
-    long t = 0;
     long end = 5000;
     int window = 10;
     char message[1000][MAXBYTES];
@@ -153,14 +138,14 @@ void gbn_client(char* iface, long port, FILE* fp) {
     while(flag) {
         if(seq == -1) {
             if(next<window+start) {
-                bzero(&temp, MAXBYTES);
-                temp_size = fread(&temp,1,MAXBYTES,fp);
+                bzero(&temp, MAXBYTES-8);
+                temp_size = fread(&temp,1,MAXBYTES-8,fp);
                 h.len = temp_size;
                 h.sequence = next;
                 bzero(buffer,MAXBYTES);
                 memcpy(buffer, &h, sizeof(h));
                 memcpy(buffer + sizeof(h), &temp, temp_size);
-                bzero(&message[next], 256);
+                bzero(&message[next], MAXBYTES);
                 memcpy(message[next], &buffer, sizeof(buffer));
 
                 sendto(socket_server, &buffer, sizeof(buffer), 0, (const struct sockaddr *)&saddr, sizeof(saddr));
@@ -196,5 +181,4 @@ void gbn_client(char* iface, long port, FILE* fp) {
         }
     }
     close(socket_server);
-}
 }
