@@ -74,7 +74,10 @@ void gbn_server(char* iface, long port, FILE* fp) {
             sendto(socket_server, s, sizeof(s),0, (const struct sockaddr *)&caddr,length);
             //bzero(buffer,MAXBYTES);
             if(!flag) {
-		        sendto(socket_server, s, sizeof(s),0, (const struct sockaddr *)&caddr,length);
+                int times = 10;
+                while(times<=0 || sendto(socket_server, s, sizeof(s),0, (const struct sockaddr *)&caddr,length) ) {
+                    --times;
+                }
 	        }
             sequence_id+=1;
         }
@@ -115,7 +118,6 @@ void gbn_client(char* iface, long port, FILE* fp) {
     struct sockaddr_in saddr,caddr;
     struct timeval t,s,e;
     bool flag = true;
-    // int bufsize;
     int length, temp_size;
     char temp[MAXBYTES-8];
     int start = 0;
