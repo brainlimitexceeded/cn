@@ -74,8 +74,8 @@ void gbn_server(char* iface, long port, FILE* fp) {
             sendto(socket_server, s, sizeof(s),0, (const struct sockaddr *)&caddr,length);
             //bzero(buffer,MAXBYTES);
             if(!flag) {
-                int times = 10;
-                while(times<=0 || sendto(socket_server, s, sizeof(s),0, (const struct sockaddr *)&caddr,length) ) {
+                int times = 3;
+                while(times>=0 && !sendto(socket_server, s, sizeof(s),0, (const struct sockaddr *)&caddr,length) ) {
                     --times;
                 }
 	        }
@@ -140,6 +140,7 @@ void gbn_client(char* iface, long port, FILE* fp) {
     setsockopt(socket_server, SOL_SOCKET, SO_RCVTIMEO, &t,sizeof(t));
     
     while(flag) {
+	//printf("%d\n",window);
         if(window+start>n) {
             if(seq<0) {
                 bzero(&temp, MAXBYTES-8);
@@ -154,7 +155,7 @@ void gbn_client(char* iface, long port, FILE* fp) {
 
                 sendto(socket_server, &buffer, sizeof(buffer), 0, (const struct sockaddr *)&saddr, sizeof(saddr));
                 if(start == n) {
-                    gettimeofday(&e,NULL);
+                    gettimeofday(&s,NULL);
                 }
                 if(temp_size<MAXBYTES-8) {
                     seq = n;
@@ -170,7 +171,7 @@ void gbn_client(char* iface, long port, FILE* fp) {
             }
         }
         gettimeofday(&e, NULL);
-        if( (e.tv_sec-s.tv_sec)*1000000 <= end) {
+        if( (e.tv_usec-s.tv_usec)+(e.tv_sec-s.tv_sec)*1000000 <= end) {
             ++window;
             continue;
         }
